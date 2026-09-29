@@ -1,0 +1,33 @@
+# macOS
+.DS_Store
+
+# Local environment and credentials
+.env
+.env.*
+!.env.example
+*.agekey
+*.pem
+*.key
+.age/
+.kube/
+kubeconfig*
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+
+# Node and frontend builds
+node_modules/
+dist/
+
+# Local tools and generated output
+.idea/
+.vscode/
+coverage/
+tmp/
+
+# Raw incident captures may contain sensitive or excessive data.
+# Commit only reviewed and sanitized evidence.
+incidents/evidence/raw/
