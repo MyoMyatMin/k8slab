@@ -561,17 +561,41 @@ Every phase guide must use `docs/guide-template.md` and include:
 5. Version and environment assumptions
 6. Files that will be created or changed
 7. A pre-exercise prediction or design question
-8. Guided implementation in small, explained steps
-9. Expected results after meaningful steps
-10. Verification commands or queries
-11. At least one controlled failure or troubleshooting exercise
-12. Common failure symptoms and diagnostic reasoning
-13. Production considerations and lab-specific shortcuts
-14. Cleanup, rollback, or reset procedure
-15. Definition-of-done checklist
-16. Review questions and further study
+8. An explicit exercise mode for each implementation section
+9. Guided implementation in small, explained steps
+10. Expected results after meaningful steps
+11. Verification commands or queries
+12. At least one controlled failure or troubleshooting exercise
+13. Common failure symptoms and diagnostic reasoning
+14. Production considerations and lab-specific shortcuts
+15. Cleanup, rollback, or reset procedure
+16. Definition-of-done checklist
+17. Review questions and further study
 
 Guides should reveal explanations progressively. Exercises should ask the learner to investigate before showing a solution. Commands must be safe to rerun where practical, and destructive commands must name their exact scope.
+
+### Exercise modes
+
+The teaching style depends on whether an artifact is supporting software or a core platform artifact.
+
+**Guided completion — supporting application code**
+
+- Provide enough compilable or nearly compilable structure that Python, JavaScript, or framework syntax is not the main obstacle.
+- Leave decision-bearing lines as clearly named `TODO` items for the learner.
+- Explain what each `TODO` must achieve without immediately giving its exact answer.
+- Follow each small group of `TODO`s with a command, expected result, and common failure note.
+- Put progressive hints and an optional reference answer after the attempt, preferably in collapsed sections.
+- Require at least one learner-owned change or experiment after the baseline works.
+
+**Challenge-first — DevOps and reliability artifacts**
+
+- State the objective, operational contract, constraints, safety boundaries, and verification evidence.
+- Ask the learner to design and implement the artifact before revealing a finished solution.
+- Provide progressive hints and diagnostic questions when needed.
+- Do not front-load complete Dockerfiles, CI workflows, Kubernetes manifests, GitOps definitions, dashboards, alerts, SLOs, security policy, or chaos experiments unless the phase explicitly treats that artifact as prerequisite boilerplate.
+- A reference implementation may be revealed after a genuine attempt or used to compare completed work.
+
+This distinction keeps the demo application approachable without turning the project into an application-development course, while preserving hands-on ownership of the reliability platform.
 
 ---
 
@@ -583,7 +607,7 @@ Status values are `Planned`, `Draft`, `Validated`, and `Complete`.
 |---|---|---|
 | 0 | `docs/00-project-guide.md` | Complete |
 | 1 | `docs/01-prerequisites-and-tooling.md` | Complete |
-| 2 | `docs/02-demo-application.md` | Draft |
+| 2 | `docs/02-demo-application.md` | Complete |
 | 3 | `docs/03-containers-and-ci.md` | Planned |
 | 4 | `docs/04-kubernetes-foundation.md` | Planned |
 | 5 | `docs/05-networking-and-gateway-api.md` | Planned |

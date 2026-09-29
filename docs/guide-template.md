@@ -39,13 +39,38 @@ Ask the learner to predict behavior or make a small design decision before seein
 
 ## 7. Guided implementation
 
-Break the work into small sections. For each meaningful step include:
+Declare one exercise mode at the start of each meaningful section:
 
-1. the goal;
-2. the command or file change;
-3. why it works;
-4. the expected result;
-5. a verification check.
+- **Guided completion** for supporting application code; or
+- **Challenge-first** for core DevOps and reliability artifacts.
+
+Do not mix the modes without clearly marking the transition.
+
+### Guided-completion step
+
+Use this structure:
+
+1. State the behavior being built and why the platform needs it.
+2. Provide a runnable or nearly runnable scaffold.
+3. Mark decision-bearing gaps with numbered `TODO` comments.
+4. Explain the contract for each `TODO` without giving the answer first.
+5. Give one immediate verification command and its expected result.
+6. Add a learner-owned modification or small failure experiment.
+7. Add progressive hints and an optional collapsed reference answer.
+
+Boilerplate may be complete. The learner should fill the lines that express the concept being taught. Avoid making framework syntax or imports into accidental puzzles.
+
+### Challenge-first step
+
+Use this structure:
+
+1. State the operational goal and acceptance evidence.
+2. Define constraints, interfaces, and safety boundaries.
+3. Ask for a prediction or design choice.
+4. Let the learner implement before showing a finished artifact.
+5. Supply progressive hints and diagnostic commands.
+6. Verify behavior, failure handling, and recovery.
+7. Reveal a reference only after an attempt when useful.
 
 Do not hide essential learning behind an unexplained script.
 

@@ -1,8 +1,12 @@
 # Phase 2 — Demo Application and Instrumentation
 
-> Status: Draft  
-> Last validated: Not yet validated by the learner  
+> Status: Complete
+> Completed by learner: 2026-09-29
+> Last validated: 2026-09-29 on macOS arm64 with Python 3.14 and Redis 8.10
 > Version baseline selected: 2026-09-29 for Python 3.14 and Redis 8.10
+
+> Exercise mode: Guided completion for application code
+> Coding workbook: `docs/02-demo-application-code-workbook.md`
 
 ## 1. Why this phase matters
 
@@ -26,6 +30,8 @@ Redis
 The application will expose useful health semantics, structured logs, Prometheus metrics, trace spans, and guarded failure controls. It remains intentionally small because the operational platform—not product features—is the project.
 
 You will run everything locally. Do not create Dockerfiles, Kubernetes resources, or CI workflows yet.
+
+This phase uses partial code scaffolds because the application is a supporting workload, not the project's main subject. Work through the companion coding workbook, attempt each `TODO` before opening its hints or reference answer, and use this guide for the authoritative behavior and verification contract. From Phase 3 onward, core DevOps and reliability artifacts return to the challenge-first style.
 
 ## 2. Learning objectives
 
@@ -266,6 +272,8 @@ Direct dependencies are pinned here. In Phase 3, the container and CI workflow w
 
 ## 9. Implement configuration
 
+**Exercise mode:** Guided completion. Use [Lesson 1 — Validated configuration](02a-application-foundations-code-lab.md#lesson-1--validated-configuration).
+
 In `config.py`:
 
 1. Create a `Settings` class derived from `BaseSettings`.
@@ -298,6 +306,8 @@ phase-2
 
 ## 10. Implement Redis lifecycle and abstraction
 
+**Exercise mode:** Guided completion. Use [Lesson 2 — Asynchronous Redis boundary](02a-application-foundations-code-lab.md#lesson-2--asynchronous-redis-boundary).
+
 In `redis_client.py`:
 
 1. Use the asynchronous Redis client from `redis.asyncio`.
@@ -314,6 +324,8 @@ Question to answer in your notes: why is `INCR` safer than reading the value, ad
 
 ## 11. Implement health semantics
 
+**Exercise mode:** Guided completion. Use [Lesson 3 — Liveness and readiness](02a-application-foundations-code-lab.md#lesson-3--liveness-and-readiness).
+
 Implement liveness without checking Redis. Liveness answers whether the application process and event loop can serve a basic request.
 
 Implement readiness by awaiting Redis `PING` with a bounded timeout. Catch the narrow Redis and timeout exceptions you expect; log unexpected exceptions separately.
@@ -329,6 +341,8 @@ Verification will later prove these three distinct states:
 | Up | Up | 200 | 200 |
 
 ## 12. Implement request correlation and structured logging
+
+**Exercise mode:** Guided completion. Use [Lesson 4 — Request IDs and JSON logs](02b-application-observability-code-lab.md#lesson-4--request-ids-and-json-logs).
 
 ### 12.1 Request ID rules
 
@@ -368,6 +382,8 @@ Do not log request bodies, credentials, Redis URLs containing passwords, or full
 
 ## 13. Implement Prometheus metrics
 
+**Exercise mode:** Guided completion. Use [Lesson 5 — Prometheus metrics](02b-application-observability-code-lab.md#lesson-5--prometheus-metrics).
+
 Define metrics once at module import, not per request:
 
 ```text
@@ -396,6 +412,8 @@ Expose metrics using `prometheus_client.generate_latest()` and the official Prom
 
 ## 14. Implement local tracing
 
+**Exercise mode:** Guided completion. Use [Lesson 6 — Local OpenTelemetry traces](02b-application-observability-code-lab.md#lesson-6--local-opentelemetry-traces).
+
 In `telemetry.py`:
 
 1. Create an OpenTelemetry `Resource` with service name, version, and environment.
@@ -418,6 +436,8 @@ one trace
 
 ## 15. Assemble the FastAPI application
 
+**Exercise mode:** Guided completion. Use [Lesson 7 — Remaining API endpoints](02b-application-observability-code-lab.md#lesson-7--remaining-api-endpoints).
+
 In `main.py`:
 
 1. Use FastAPI's lifespan mechanism for Redis creation and cleanup.
@@ -432,6 +452,8 @@ In `main.py`:
 Think about middleware order before testing. The outer middleware observes failures produced by inner middleware and routes; the order affects correlation fields, timing, and error metrics.
 
 ## 16. Build the static frontend
+
+**Exercise mode:** Guided completion. Use [Lesson 8 — Static frontend](02c-frontend-and-tests-code-lab.md#lesson-8--static-frontend).
 
 The frontend should remain small. It must:
 
@@ -453,6 +475,8 @@ python3 -m http.server 8080 --directory app/frontend
 The frontend server is intentionally simple and is not the production container server selected in Phase 3.
 
 ## 17. Write tests before declaring success
+
+**Exercise mode:** Guided completion. Use [Lesson 9 — Tests with a fake dependency](02c-frontend-and-tests-code-lab.md#lesson-9--tests-with-a-fake-dependency).
 
 Use FastAPI's `TestClient` and dependency overrides. Tests must not require a real Redis process unless explicitly marked as integration tests.
 

@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Interactive workload for the Kubernetes reliability lab">
+    <title>Kubernetes Reliability Lab</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main>
+      <header>
+        <p class="eyebrow">Phase 2 workload</p>
+        <h1>Kubernetes Reliability Lab</h1>
+        <p>
+          Exercise health checks, dependency behavior, latency, errors, and
+          request correlation before deploying the workload to Kubernetes.
+        </p>
+      </header>
+
+      <section aria-labelledby="health-title">
+        <h2 id="health-title">Service health</h2>
+        <div class="status-grid">
+          <p id="liveness" class="status unknown">Liveness: not checked</p>
+          <p id="readiness" class="status unknown">Readiness: not checked</p>
+        </div>
+        <button type="button" data-action="health">Check health</button>
+      </section>
+
+      <section aria-labelledby="actions-title">
+        <h2 id="actions-title">Reliability actions</h2>
+        <div class="actions">
+          <button type="button" data-action="visits">Increment visits</button>
+          <button type="button" data-action="normal">Normal work</button>
+          <button type="button" data-action="slow">250 ms work</button>
+          <button type="button" data-action="fail" class="danger">Intentional failure</button>
+        </div>
+      </section>
+
+      <section aria-labelledby="result-title">
+        <h2 id="result-title">Latest result</h2>
+        <pre id="result" aria-live="polite">No request sent</pre>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
