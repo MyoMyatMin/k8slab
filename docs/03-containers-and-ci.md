@@ -1,6 +1,6 @@
 # Phase 3 — Containers and Continuous Integration
 
-> Status: Validated
+> Status: Complete
 > Last validated: 2026-10-02
 > Version baseline selected: 2026-09-29 for macOS arm64, Docker Compose 5.1.2, Buildx 0.33.0, and GitHub Actions
 > Exercise mode: Challenge-first
@@ -695,7 +695,7 @@ If a published tag is wrong, do not silently rebuild the same claimed release. P
 - [x] SBOM and provenance attestations are present.
 - [x] Published multi-platform digests are recorded without secrets.
 - [x] A clean commit produces the same tested publication path.
-- [ ] Review questions can be answered in your own words.
+- [x] Review questions can be answered in your own words.
 
 When every item is true, change this guide and Phase 3 in the canonical
 documentation map from `Validated` to `Complete`.
