@@ -1,0 +1,152 @@
+name: Publish images
+
+on:
+    push:
+        branches:
+            - main
+    workflow_dispatch:
+
+permissions:
+    contents: read
+
+concurrency:
+    group: publish-${{ github.ref }}
+    cancel-in-progress: false
+
+env:
+    API_IMAGE: ghcr.io/myomyatmin/k8slab-api
+    FRONTEND_IMAGE: ghcr.io/myomyatmin/k8slab-frontend
+
+jobs:
+    validate:
+        name: Required validation gate
+        uses: ./.github/workflows/ci.yml
+        permissions:
+            contents: read
+
+    publish:
+        name: Publish multi-platform images
+        needs: validate
+        if: github.ref == 'refs/heads/main'
+        runs-on: ubuntu-24.04
+        timeout-minutes: 90
+
+        permissions:
+            contents: read
+            packages: write
+            id-token: write
+            attestations: write
+            artifact-metadata: write
+
+        steps:
+            - name: Check out repository
+              uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+            - name: Set up QEMU
+              uses: docker/setup-qemu-action@96fe6ef7f33517b61c61be40b68a1882f3264fb8 # v4.2.0
+
+            - name: Set up Docker Buildx
+              uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4.3.0
+
+            - name: Log in to GitHub Container Registry
+              uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+              with:
+                  registry: ghcr.io
+                  username: ${{ github.actor }}
+                  password: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Generate API image metadata
+              id: api_meta
+              uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
+              with:
+                  images: ${{ env.API_IMAGE }}
+                  flavor: |
+                      latest=false
+                  tags: |
+                      type=raw,value=sha-${{ github.sha }}
+                      type=raw,value=main
+                  labels: |
+                      org.opencontainers.image.title=k8slab-api
+                      org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+                      org.opencontainers.image.revision=${{ github.sha }}
+
+            - name: Build and publish API image
+              id: api_build
+              uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf # v7.2.0
+              with:
+                  context: app/api
+                  platforms: linux/amd64,linux/arm64
+                  push: true
+                  tags: ${{ steps.api_meta.outputs.tags }}
+                  labels: ${{ steps.api_meta.outputs.labels }}
+                  annotations: |
+                      index:org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+                      index:org.opencontainers.image.revision=${{ github.sha }}
+                  build-args: |
+                      VERSION=sha-${{ github.sha }}
+                      REVISION=${{ github.sha }}
+                      SOURCE=${{ github.server_url }}/${{ github.repository }}
+                  cache-from: type=gha,scope=api-publish
+                  cache-to: type=gha,mode=max,scope=api-publish
+                  sbom: true
+                  provenance: mode=max
+
+            - name: Attest API image
+              uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+              with:
+                  subject-name: ${{ env.API_IMAGE }}
+                  subject-digest: ${{ steps.api_build.outputs.digest }}
+                  push-to-registry: true
+
+            - name: Generate frontend image metadata
+              id: frontend_meta
+              uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
+              with:
+                  images: ${{ env.FRONTEND_IMAGE }}
+                  flavor: |
+                      latest=false
+                  tags: |
+                      type=raw,value=sha-${{ github.sha }}
+                      type=raw,value=main
+                  labels: |
+                      org.opencontainers.image.title=k8slab-frontend
+                      org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+                      org.opencontainers.image.revision=${{ github.sha }}
+
+            - name: Build and publish frontend image
+              id: frontend_build
+              uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf # v7.2.0
+              with:
+                  context: app/frontend
+                  platforms: linux/amd64,linux/arm64
+                  push: true
+                  tags: ${{ steps.frontend_meta.outputs.tags }}
+                  labels: ${{ steps.frontend_meta.outputs.labels }}
+                  annotations: |
+                      index:org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+                      index:org.opencontainers.image.revision=${{ github.sha }}
+                  cache-from: type=gha,scope=frontend-publish
+                  cache-to: type=gha,mode=max,scope=frontend-publish
+                  sbom: true
+                  provenance: mode=max
+
+            - name: Attest frontend image
+              uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+              with:
+                  subject-name: ${{ env.FRONTEND_IMAGE }}
+                  subject-digest: ${{ steps.frontend_build.outputs.digest }}
+                  push-to-registry: true
+
+            - name: Write publication summary
+              env:
+                  API_DIGEST: ${{ steps.api_build.outputs.digest }}
+                  FRONTEND_DIGEST: ${{ steps.frontend_build.outputs.digest }}
+              run: |
+                  {
+                    echo "## Published container images"
+                    echo ""
+                    echo "- API: \`${API_IMAGE}@${API_DIGEST}\`"
+                    echo "- Frontend: \`${FRONTEND_IMAGE}@${FRONTEND_DIGEST}\`"
+                    echo ""
+                    echo "Architectures: \`linux/amd64\`, \`linux/arm64\`"
+                  } >> "$GITHUB_STEP_SUMMARY"

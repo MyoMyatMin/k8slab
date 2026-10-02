@@ -1,0 +1,105 @@
+name: k8slab
+
+services:
+  redis:
+    image: redis:8.10.2-alpine3.23@sha256:3811787313eba226a2ef38658c6ccb91cd5e110edc89c37767de373120a0e5a0
+    user: redis
+    command:
+      - redis-server
+      - --save
+      - ""
+      - --appendonly
+      - "no"
+    read_only: true
+    tmpfs:
+      - /data
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+    networks:
+      - lab
+
+  api:
+    image: k8slab-api:dev
+    build:
+      context: ./app/api
+      args:
+        VERSION: compose-dev
+        REVISION: local
+        SOURCE: "https://github.com/MyoMyatMin/k8slab"
+    environment:
+      APP_VERSION: compose-dev
+      APP_ENVIRONMENT: local
+      REDIS_URL: redis://redis:6379/0
+      ENABLE_FAILURE_INJECTION: "true"
+      LOG_LEVEL: INFO
+    ports:
+      - "127.0.0.1:8000:8000"
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/ready', timeout=2)"
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+    networks:
+      - lab
+
+  frontend:
+    image: k8slab-frontend:dev
+    build:
+      context: ./app/frontend
+      args:
+        VERSION: compose-dev
+        REVISION: local
+        SOURCE: "https://github.com/MyoMyatMin/k8slab"
+    ports:
+      - "127.0.0.1:8080:8080"
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD
+        - wget
+        - --quiet
+        - --spider
+        - http://127.0.0.1:8080/
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+    networks:
+      - lab
+
+networks:
+  lab:
+    name: k8slab-network
