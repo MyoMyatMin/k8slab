@@ -1,0 +1,172 @@
+name: CI
+
+on:
+    push:
+    pull_request:
+    workflow_call:
+
+permissions:
+    contents: read
+
+concurrency:
+    group: ci-${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    validate:
+        name: Test, build, and scan
+        runs-on: ubuntu-24.04
+        timeout-minutes: 45
+
+        steps:
+            - name: Check out repository
+              uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+            - name: Set up Python
+              uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+              with:
+                  python-version: "3.14.0"
+                  cache: pip
+                  cache-dependency-path: app/api/requirements-dev.lock
+
+            - name: Install hashed development dependencies
+              working-directory: app/api
+              run: |
+                  python -m pip install \
+                    --require-hashes \
+                    --requirement requirements-dev.lock
+
+            - name: Run API tests
+              working-directory: app/api
+              run: pytest -q
+
+            - name: Validate Compose configuration
+              run: |
+                  docker compose config --quiet
+                  docker compose config
+
+            - name: Scan Dockerfiles
+              uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+              with:
+                  version: v0.74.0
+                  scan-type: config
+                  scan-ref: .
+                  trivy-config: .trivy.yaml
+                  exit-code: "1"
+                  hide-progress: "true"
+
+            - name: Set up Docker Buildx
+              uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4.3.0
+
+            - name: Build API image
+              uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf # v7.2.0
+              with:
+                  context: app/api
+                  platforms: linux/amd64
+                  load: true
+                  push: false
+                  tags: k8slab-api:dev
+                  provenance: false
+                  sbom: false
+                  build-args: |
+                      VERSION=ci-${{ github.sha }}
+                      REVISION=${{ github.sha }}
+                      SOURCE=${{ github.server_url }}/${{ github.repository }}
+                  cache-from: type=gha,scope=api-ci
+                  cache-to: type=gha,mode=max,scope=api-ci
+
+            - name: Build frontend image
+              uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf # v7.2.0
+              with:
+                  context: app/frontend
+                  platforms: linux/amd64
+                  load: true
+                  push: false
+                  tags: k8slab-frontend:dev
+                  provenance: false
+                  sbom: false
+                  build-args: |
+                      VERSION=ci-${{ github.sha }}
+                      REVISION=${{ github.sha }}
+                      SOURCE=${{ github.server_url }}/${{ github.repository }}
+                  cache-from: type=gha,scope=frontend-ci
+                  cache-to: type=gha,mode=max,scope=frontend-ci
+
+            - name: Start Compose stack
+              run: docker compose up --detach --no-build --wait
+
+            - name: Run smoke tests
+              run: |
+                  curl --fail-with-body --silent --show-error \
+                    http://127.0.0.1:8080/ >/dev/null
+
+                  curl --fail-with-body --silent --show-error \
+                    http://127.0.0.1:8000/health/live
+
+                  curl --fail-with-body --silent --show-error \
+                    http://127.0.0.1:8000/health/ready
+
+                  curl --fail-with-body --silent --show-error \
+                    http://127.0.0.1:8000/api/v1/visits
+
+            - name: Verify non-root runtime identities
+              run: |
+                  for service in api frontend redis; do
+                    uid="$(docker compose exec -T "$service" id -u)"
+                    echo "$service uid=$uid"
+
+                    if [ "$uid" -eq 0 ]; then
+                      echo "$service is running as root"
+                      exit 1
+                    fi
+                  done
+
+            - name: Verify read-only root filesystems
+              run: |
+                  docker compose exec -T api sh -c 'test ! -w /'
+                  docker compose exec -T frontend sh -c 'test ! -w /'
+                  docker compose exec -T redis sh -c 'test ! -w /'
+
+            - name: Stop Compose stack
+              if: always()
+              run: docker compose down --volumes --remove-orphans
+
+            - name: Report API image findings
+              uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+              with:
+                  version: v0.74.0
+                  scan-type: image
+                  image-ref: k8slab-api:dev
+                  trivy-config: .trivy.yaml
+                  hide-progress: "true"
+
+            - name: Block fixable critical API findings
+              uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+              with:
+                  version: v0.74.0
+                  scan-type: image
+                  image-ref: k8slab-api:dev
+                  severity: CRITICAL
+                  ignore-unfixed: true
+                  exit-code: "1"
+                  hide-progress: "true"
+
+            - name: Report frontend image findings
+              uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+              with:
+                  version: v0.74.0
+                  scan-type: image
+                  image-ref: k8slab-frontend:dev
+                  trivy-config: .trivy.yaml
+                  hide-progress: "true"
+
+            - name: Block fixable critical frontend findings
+              uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+              with:
+                  version: v0.74.0
+                  scan-type: image
+                  image-ref: k8slab-frontend:dev
+                  severity: CRITICAL
+                  ignore-unfixed: true
+                  exit-code: "1"
+                  hide-progress: "true"

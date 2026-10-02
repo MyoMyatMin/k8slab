@@ -1,0 +1,9 @@
+# Deny everything by default.
+**
+
+# Permit only the files required for the frontend image.
+!Dockerfile
+!nginx.conf
+!index.html
+!app.js
+!styles.css

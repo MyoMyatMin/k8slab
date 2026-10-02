@@ -1,0 +1,8 @@
+# Deny everything by default.
+**
+
+# Permit only files required to build the API image.
+!Dockerfile
+!requirements.lock
+!reliability_api/
+!reliability_api/**

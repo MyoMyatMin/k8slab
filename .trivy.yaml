@@ -1,0 +1,10 @@
+format: table
+
+severity:
+  - HIGH
+  - CRITICAL
+
+exit-code: 0
+
+vulnerability:
+  ignore-unfixed: false
