@@ -1,7 +1,7 @@
 # Phase 3 — Containers and Continuous Integration
 
-> Status: Draft
-> Last validated: Not yet validated by the learner
+> Status: Validated
+> Last validated: 2026-10-02
 > Version baseline selected: 2026-09-29 for macOS arm64, Docker Compose 5.1.2, Buildx 0.33.0, and GitHub Actions
 > Exercise mode: Challenge-first
 
@@ -63,7 +63,8 @@ You do not receive complete Dockerfiles, Compose configuration, or GitHub Action
 - `docker compose version` reports 5.1.2.
 - `docker buildx version` reports 0.33.0.
 - GitHub CLI is authenticated as `MyoMyatMin`.
-- The repository `MyoMyatMin/k8slab` exists and is private.
+- The repository `MyoMyatMin/k8slab` exists. It is public at completion so
+  GitHub can store artifact attestations on the selected account plan.
 - At least 30 GiB of disk remains available.
 - No unrelated credentials or `.env` files are staged.
 
@@ -621,7 +622,9 @@ Provenance verification:
 Recorded on:
 ```
 
-Confirm that a pull by digest works using the authentication appropriate for the private package. Never paste a token into the document or shell history.
+Confirm that an anonymous pull by digest works for both public packages. If a
+future package is deliberately private, use an approved credential flow and
+never paste a token into the document or shell history.
 
 ## 25. Troubleshooting
 
@@ -646,7 +649,9 @@ Confirm that a pull by digest works using the authentication appropriate for the
 - Vulnerability databases change after an image is published, so scanning only at build time is insufficient for long-lived production images.
 - Digest pinning improves reproducibility but requires an intentional update process for security patches.
 - CI caches improve speed but must never bypass tests, scans, or content-addressed publication.
-- Private GHCR packages require pull authentication until visibility or access is deliberately changed.
+- GHCR visibility is controlled separately from repository visibility. This
+  lab uses public packages so Phase 4 can pull immutable digests without image
+  pull credentials.
 - Provenance says how something was built; it does not prove the source or build process was free of malicious behavior.
 
 ## 27. Cleanup and rollback
@@ -670,29 +675,30 @@ If a published tag is wrong, do not silently rebuild the same claimed release. P
 
 ## 28. Definition of done
 
-- [ ] Phase 2 is committed and pushed separately.
-- [ ] Phase 3 work is performed on a dedicated branch.
-- [ ] Dependency lock files include hashes and install successfully.
-- [ ] API and frontend Dockerfiles use pinned base-image digests.
-- [ ] Build contexts exclude local and sensitive files.
-- [ ] Both images build on the local arm64 environment.
-- [ ] Runtime containers execute as non-root.
-- [ ] Read-only root filesystem and dropped capabilities are verified.
-- [ ] Compose connects API to Redis through service DNS.
-- [ ] Redis is not published to the host.
-- [ ] The complete UI/API/Redis system works through Compose.
-- [ ] The Redis failure is diagnosed and recovered without rebuilding.
-- [ ] Trivy configuration and image scans run with a documented policy.
-- [ ] Pull-request CI has read-only permissions and publishes nothing.
-- [ ] All actions are pinned to full commit SHAs.
-- [ ] Main-branch publication produces amd64 and arm64 images.
-- [ ] GHCR contains API and frontend packages.
-- [ ] SBOM and provenance attestations are present.
-- [ ] Published multi-platform digests are recorded without secrets.
-- [ ] A clean commit produces the same tested publication path.
+- [x] Phase 2 is committed and pushed separately.
+- [x] Phase 3 work is performed on a dedicated branch.
+- [x] Dependency lock files include hashes and install successfully.
+- [x] API and frontend Dockerfiles use pinned base-image digests.
+- [x] Build contexts exclude local and sensitive files.
+- [x] Both images build on the local arm64 environment.
+- [x] Runtime containers execute as non-root.
+- [x] Read-only root filesystem and dropped capabilities are verified.
+- [x] Compose connects API to Redis through service DNS.
+- [x] Redis is not published to the host.
+- [x] The complete UI/API/Redis system works through Compose.
+- [x] The Redis failure is diagnosed and recovered without rebuilding.
+- [x] Trivy configuration and image scans run with a documented policy.
+- [x] Pull-request CI has read-only permissions and publishes nothing.
+- [x] All actions are pinned to full commit SHAs.
+- [x] Main-branch publication produces amd64 and arm64 images.
+- [x] GHCR contains API and frontend packages.
+- [x] SBOM and provenance attestations are present.
+- [x] Published multi-platform digests are recorded without secrets.
+- [x] A clean commit produces the same tested publication path.
 - [ ] Review questions can be answered in your own words.
 
-When every item is true, change this guide and Phase 3 in the canonical documentation map from `Draft` to `Complete`.
+When every item is true, change this guide and Phase 3 in the canonical
+documentation map from `Validated` to `Complete`.
 
 ## 29. Review questions
 
