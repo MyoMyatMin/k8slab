@@ -609,7 +609,7 @@ Status values are `Planned`, `Draft`, `Validated`, and `Complete`.
 | 1 | `docs/01-prerequisites-and-tooling.md` | Complete |
 | 2 | `docs/02-demo-application.md` | Complete |
 | 3 | `docs/03-containers-and-ci.md` | Complete |
-| 4 | `docs/04-kubernetes-foundation.md` | Planned |
+| 4 | `docs/04-kubernetes-foundation.md` | Draft |
 | 5 | `docs/05-networking-and-gateway-api.md` | Planned |
 | 6 | `docs/06-gitops-with-argocd.md` | Planned |
 | 7 | `docs/07-metrics-and-dashboards.md` | Planned |
