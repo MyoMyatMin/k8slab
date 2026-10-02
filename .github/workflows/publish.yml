@@ -4,6 +4,14 @@ on:
     push:
         branches:
             - main
+        paths:
+            - "app/api/**"
+            - "app/frontend/**"
+            - ".github/workflows/ci.yml"
+            - ".github/workflows/publish.yml"
+            - ".trivy.yaml"
+            - "compose.yaml"
+            - "versions.env"
     workflow_dispatch:
 
 permissions:

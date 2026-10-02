@@ -608,7 +608,7 @@ Status values are `Planned`, `Draft`, `Validated`, and `Complete`.
 | 0 | `docs/00-project-guide.md` | Complete |
 | 1 | `docs/01-prerequisites-and-tooling.md` | Complete |
 | 2 | `docs/02-demo-application.md` | Complete |
-| 3 | `docs/03-containers-and-ci.md` | Validated |
+| 3 | `docs/03-containers-and-ci.md` | Complete |
 | 4 | `docs/04-kubernetes-foundation.md` | Planned |
 | 5 | `docs/05-networking-and-gateway-api.md` | Planned |
 | 6 | `docs/06-gitops-with-argocd.md` | Planned |
