@@ -127,6 +127,7 @@ These are the default project choices. A phase guide may explain alternatives, b
 | Local container environment | OrbStack using its Docker-compatible engine | Selected workstation runtime; kind uses this engine to run Kubernetes node containers |
 | Application | Static frontend, Python FastAPI API, and Redis | Small system with HTTP, dependency, state, metrics, logs, and useful failure modes |
 | External traffic | Kubernetes Gateway API with Envoy Gateway | Teaches the current Kubernetes routing model without tying manifests to legacy Ingress APIs |
+| Local CNI and network policy | Calico Open Source | kindnet does not enforce NetworkPolicy; Calico provides a reproducible policy-capable CNI on kind |
 | App manifests | Kustomize bases and overlays | Keeps Kubernetes YAML visible while teaching reusable environment configuration |
 | Platform packages | Helm, declared through GitOps | Uses upstream packaging while retaining declarative desired state |
 | CI | GitHub Actions | Builds, tests, scans, and publishes images |
@@ -610,7 +611,7 @@ Status values are `Planned`, `Draft`, `Validated`, and `Complete`.
 | 2 | `docs/02-demo-application.md` | Complete |
 | 3 | `docs/03-containers-and-ci.md` | Complete |
 | 4 | `docs/04-kubernetes-foundation.md` | Complete |
-| 5 | `docs/05-networking-and-gateway-api.md` | Planned |
+| 5 | `docs/05-networking-and-gateway-api.md` | Draft |
 | 6 | `docs/06-gitops-with-argocd.md` | Planned |
 | 7 | `docs/07-metrics-and-dashboards.md` | Planned |
 | 8 | `docs/08-logging-with-loki.md` | Planned |
