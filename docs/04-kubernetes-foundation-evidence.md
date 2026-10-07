@@ -83,12 +83,14 @@ All five Pods were Ready with zero restarts. API and frontend each placed one
 replica on each worker. Redis ran on one labeled worker. No application Pod ran
 on the control-plane node.
 
-During the image rolling update, the soft `ScheduleAnyway` rule temporarily
-left each two-replica workload co-located. Kubernetes does not automatically
-rebalance already scheduled Pods. Deleting one API Pod and one frontend Pod
-let their controllers replace them, and the scheduler restored one replica per
-worker. This demonstrates that a soft spread preference is not a permanent
-placement guarantee.
+During the image rolling update, both new replicas of each workload briefly
+ended up co-located even though the manifest uses `DoNotSchedule`. Each new Pod
+was valid against the Pods that existed at its own scheduling instant; later
+termination of old replicas changed the final skew. Kubernetes does not
+automatically rebalance already scheduled Pods. Deleting one API Pod and one
+frontend Pod let their controllers replace them, and the scheduler restored
+one replica per worker. A hard scheduling-time constraint is therefore not a
+continuous rebalancing mechanism.
 
 Ready Service endpoints matched the current Pod addresses:
 
