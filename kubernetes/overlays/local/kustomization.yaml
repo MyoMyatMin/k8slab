@@ -1,0 +1,33 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: reliability
+
+resources:
+  - ../../base
+  - namespace.yaml
+  - resource-quota.yaml
+  - limit-range.yaml
+
+images:
+  - name: ghcr.io/myomyatmin/k8slab-api
+    digest: sha256:44efb6d2bcb8968e5ac01986e70f523b969fa448c6c250da01dd3129fb786fef
+  - name: ghcr.io/myomyatmin/k8slab-frontend
+    digest: sha256:689936c57951b9a4c41ec4183891e2b253ed32122b1d0b12bffc0fcb52f0bf2d
+
+labels:
+  - pairs:
+      app.kubernetes.io/managed-by: kustomize
+    includeSelectors: false
+    includeTemplates: true
+
+patches:
+  - target:
+      group: apps
+      version: v1
+      kind: Deployment
+    patch: |-
+      - op: add
+        path: /spec/template/spec/nodeSelector
+        value:
+          reliability.dev/workload: "true"
