@@ -4,6 +4,7 @@
 > Recorded on: 2026-10-07 (Asia/Bangkok)
 > Baseline commit: `9941a0c211855314d1a1115edf2a4edcc6e5a829`
 > Learning branch: `phase-4-kubernetes-foundation`
+> Application image source commit: `9fbb259cd8b6e5fd3d09742b669289182655243c`
 
 ## 1. Environment and configuration
 
@@ -44,11 +45,18 @@ The final render contains three Deployments, three Services, one Namespace, one
 ResourceQuota, one LimitRange, and one generated ConfigMap. It contains no
 `latest`, `NodePort`, `hostPort`, or `replace-in-overlay` value.
 
+The first Phase 4 CI run detected newly disclosed, fixable critical Debian
+findings in the earlier API image. The dependency refresh was isolated in PR
+`#6`, updated the pinned base to Python `3.14.8-slim-bookworm`, passed both CI
+runs, and published the following replacement images from main commit
+`9fbb259cd8b6e5fd3d09742b669289182655243c`. The API replacement reported zero
+fixable CRITICAL findings in the blocking Trivy scan.
+
 Deployed images:
 
 ```text
-ghcr.io/myomyatmin/k8slab-api@sha256:44efb6d2bcb8968e5ac01986e70f523b969fa448c6c250da01dd3129fb786fef
-ghcr.io/myomyatmin/k8slab-frontend@sha256:689936c57951b9a4c41ec4183891e2b253ed32122b1d0b12bffc0fcb52f0bf2d
+ghcr.io/myomyatmin/k8slab-api@sha256:80b24677fbb67cbaacb2334d584a7f98cbc8e9b6f8dab25cb582869ae13a77e5
+ghcr.io/myomyatmin/k8slab-frontend@sha256:e0f89ae8c39963d2c10b3821152da43b7503b9f767e63b2d28b355937593178f
 redis:8.10.2-alpine3.23@sha256:3811787313eba226a2ef38658c6ccb91cd5e110edc89c37767de373120a0e5a0
 ```
 
@@ -75,12 +83,19 @@ All five Pods were Ready with zero restarts. API and frontend each placed one
 replica on each worker. Redis ran on one labeled worker. No application Pod ran
 on the control-plane node.
 
+During the image rolling update, the soft `ScheduleAnyway` rule temporarily
+left each two-replica workload co-located. Kubernetes does not automatically
+rebalance already scheduled Pods. Deleting one API Pod and one frontend Pod
+let their controllers replace them, and the scheduler restored one replica per
+worker. This demonstrates that a soft spread preference is not a permanent
+placement guarantee.
+
 Ready Service endpoints matched the current Pod addresses:
 
 ```text
 SERVICE    ENDPOINTS               READY
-api        10.244.1.2,10.244.2.2   true,true
-frontend   10.244.1.3,10.244.2.3   true,true
+api        10.244.1.5,10.244.2.7   true,true
+frontend   10.244.1.6,10.244.2.6   true,true
 redis      10.244.2.4              true
 ```
 

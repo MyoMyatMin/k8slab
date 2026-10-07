@@ -11,9 +11,9 @@ resources:
 
 images:
   - name: ghcr.io/myomyatmin/k8slab-api
-    digest: sha256:44efb6d2bcb8968e5ac01986e70f523b969fa448c6c250da01dd3129fb786fef
+    digest: sha256:80b24677fbb67cbaacb2334d584a7f98cbc8e9b6f8dab25cb582869ae13a77e5
   - name: ghcr.io/myomyatmin/k8slab-frontend
-    digest: sha256:689936c57951b9a4c41ec4183891e2b253ed32122b1d0b12bffc0fcb52f0bf2d
+    digest: sha256:e0f89ae8c39963d2c10b3821152da43b7503b9f767e63b2d28b355937593178f
 
 labels:
   - pairs:

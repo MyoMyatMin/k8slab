@@ -102,13 +102,15 @@ Executable version pins remain in `versions.env`.
 | kubectl context | `kind-k8slab` |
 | Application namespace | `reliability` |
 
-Phase 3 recorded the exact release identities in
-`docs/03-containers-and-ci-evidence.md`. Phase 4 must consume these top-level
-multi-platform digests:
+Phase 3 established the publication workflow and recorded its first release in
+`docs/03-containers-and-ci-evidence.md`. A 2026-10-07 security refresh updated
+the Python base image and published the successor release from main commit
+`9fbb259cd8b6e5fd3d09742b669289182655243c`. Phase 4 must consume these
+top-level multi-platform digests:
 
 ```text
-ghcr.io/myomyatmin/k8slab-api@sha256:44efb6d2bcb8968e5ac01986e70f523b969fa448c6c250da01dd3129fb786fef
-ghcr.io/myomyatmin/k8slab-frontend@sha256:689936c57951b9a4c41ec4183891e2b253ed32122b1d0b12bffc0fcb52f0bf2d
+ghcr.io/myomyatmin/k8slab-api@sha256:80b24677fbb67cbaacb2334d584a7f98cbc8e9b6f8dab25cb582869ae13a77e5
+ghcr.io/myomyatmin/k8slab-frontend@sha256:e0f89ae8c39963d2c10b3821152da43b7503b9f767e63b2d28b355937593178f
 ```
 
 Do not replace these with `latest`, a mutable tag, or a locally rebuilt image.
