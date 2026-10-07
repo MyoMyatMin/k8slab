@@ -1,7 +1,7 @@
 # Phase 4 — Kubernetes Foundation
 
-> Status: Draft
-> Last validated: Not yet validated
+> Status: Complete
+> Last validated: 2026-10-07
 > Version baseline selected: 2026-09-29 for macOS arm64, kind 0.33.0, Kubernetes 1.37.0, kubectl 1.37.1, and Kustomize 5.8.1
 > Exercise mode: Challenge-first
 
@@ -102,13 +102,15 @@ Executable version pins remain in `versions.env`.
 | kubectl context | `kind-k8slab` |
 | Application namespace | `reliability` |
 
-Phase 3 recorded the exact release identities in
-`docs/03-containers-and-ci-evidence.md`. Phase 4 must consume these top-level
-multi-platform digests:
+Phase 3 established the publication workflow and recorded its first release in
+`docs/03-containers-and-ci-evidence.md`. A 2026-10-07 security refresh updated
+the Python base image and published the successor release from main commit
+`9fbb259cd8b6e5fd3d09742b669289182655243c`. Phase 4 must consume these
+top-level multi-platform digests:
 
 ```text
-ghcr.io/myomyatmin/k8slab-api@sha256:44efb6d2bcb8968e5ac01986e70f523b969fa448c6c250da01dd3129fb786fef
-ghcr.io/myomyatmin/k8slab-frontend@sha256:689936c57951b9a4c41ec4183891e2b253ed32122b1d0b12bffc0fcb52f0bf2d
+ghcr.io/myomyatmin/k8slab-api@sha256:80b24677fbb67cbaacb2334d584a7f98cbc8e9b6f8dab25cb582869ae13a77e5
+ghcr.io/myomyatmin/k8slab-frontend@sha256:e0f89ae8c39963d2c10b3821152da43b7503b9f767e63b2d28b355937593178f
 ```
 
 Do not replace these with `latest`, a mutable tag, or a locally rebuilt image.
@@ -529,27 +531,50 @@ kubectl kustomize kubernetes/overlays/local \
 Inspect for required and prohibited content:
 
 ```bash
-grep -nE 'kind: (Deployment|Service|Namespace|ResourceQuota|LimitRange)' \
+grep -nE 'kind: (Deployment|Service|Namespace|ResourceQuota|LimitRange|ConfigMap)' \
   /tmp/k8slab-phase4/rendered.yaml
 grep -n 'sha256:' /tmp/k8slab-phase4/rendered.yaml
-grep -nE 'readinessProbe|livenessProbe|requests:|limits:' \
+grep -nE 'startupProbe|readinessProbe|livenessProbe|requests:|limits:' \
   /tmp/k8slab-phase4/rendered.yaml
-grep -nE 'latest|NodePort|hostPort|password|token' \
+grep -nE 'latest|NodePort|hostPort|replace-in-overlay|password|token' \
   /tmp/k8slab-phase4/rendered.yaml || true
 ```
 
 Expected:
 
 - three Deployments and three Services;
-- one Namespace, ResourceQuota, and LimitRange;
+- one Namespace, ResourceQuota, LimitRange, and generated ConfigMap;
 - both application digests and the pinned Redis digest;
 - probes and resources for every container;
 - no `latest`, NodePort, hostPort, password, or token.
 
-Ask the API server to validate the rendered resources without persisting them:
+First ask kubectl to validate the complete render locally:
 
 ```bash
 bash scripts/require-lab-context.sh
+kubectl apply --dry-run=client -k kubernetes/overlays/local
+```
+
+Server-side validation requires the target namespace to already exist. A
+server-side dry-run Namespace is not persisted, so the API server cannot use it
+for the later namespaced requests in the same command. Check for the namespace:
+
+```bash
+kubectl get namespace reliability
+```
+
+On the first run, `NotFound` is expected. Create only this intended namespace
+from its versioned manifest:
+
+```bash
+kubectl apply -f kubernetes/overlays/local/namespace.yaml
+```
+
+This is the sole persisted object in Step 13. Step 14 will apply the overlay and
+add its transformed labels. Now validate all rendered resources against the
+live API schema and admission rules without persisting them:
+
+```bash
 kubectl apply --dry-run=server -k kubernetes/overlays/local
 ```
 
@@ -934,31 +959,31 @@ Do not run global Docker prune commands. They can remove unrelated user data.
 
 ## 32. Definition of done
 
-- [ ] Phase 3 is complete and the recorded image digests are pullable.
-- [ ] Phase 4 work is isolated on its own branch.
-- [ ] The kind configuration declares one control plane and two labeled workers.
-- [ ] Cluster creation uses the pinned kind node digest.
-- [ ] The active context is proven to be `kind-k8slab` before mutations.
-- [ ] All three nodes become Ready.
-- [ ] Namespace, ResourceQuota, and LimitRange are versioned.
-- [ ] Kustomize base and local overlay render without errors.
-- [ ] API and frontend deploy the recorded immutable Phase 3 digests.
-- [ ] Redis deploys its pinned image digest and is not exposed to the host.
-- [ ] All workload containers declare requests and limits.
-- [ ] Workloads preserve non-root and read-only runtime restrictions.
-- [ ] Liveness and readiness probes have distinct justified meanings.
-- [ ] Services select the intended ready endpoints.
-- [ ] Application Pods schedule only on labeled workers.
-- [ ] API and frontend replicas spread across workers where possible.
-- [ ] Frontend, API liveness, API readiness, and visits work from the host.
-- [ ] Deleting one API Pod produces a controller-created replacement.
-- [ ] Redis loss leaves API live but removes API readiness.
-- [ ] Dependency recovery occurs without rebuilding an image.
-- [ ] Secret representation is explained without committing a credential.
-- [ ] The cluster is deleted and recreated successfully from versioned files.
-- [ ] Sanitized phase evidence is recorded.
-- [ ] No plaintext secret, kubeconfig, token, or generated certificate is staged.
-- [ ] Review questions can be answered in your own words.
+- [x] Phase 3 is complete and the recorded image digests are pullable.
+- [x] Phase 4 work is isolated on its own branch.
+- [x] The kind configuration declares one control plane and two labeled workers.
+- [x] Cluster creation uses the pinned kind node digest.
+- [x] The active context is proven to be `kind-k8slab` before mutations.
+- [x] All three nodes become Ready.
+- [x] Namespace, ResourceQuota, and LimitRange are versioned.
+- [x] Kustomize base and local overlay render without errors.
+- [x] API and frontend deploy the recorded immutable Phase 3 digests.
+- [x] Redis deploys its pinned image digest and is not exposed to the host.
+- [x] All workload containers declare requests and limits.
+- [x] Workloads preserve non-root and read-only runtime restrictions.
+- [x] Liveness and readiness probes have distinct justified meanings.
+- [x] Services select the intended ready endpoints.
+- [x] Application Pods schedule only on labeled workers.
+- [x] API and frontend replicas spread across workers where possible.
+- [x] Frontend, API liveness, API readiness, and visits work from the host.
+- [x] Deleting one API Pod produces a controller-created replacement.
+- [x] Redis loss leaves API live but removes API readiness.
+- [x] Dependency recovery occurs without rebuilding an image.
+- [x] Secret representation is explained without committing a credential.
+- [x] The cluster is deleted and recreated successfully from versioned files.
+- [x] Sanitized phase evidence is recorded.
+- [x] No plaintext secret, kubeconfig, token, or generated certificate is staged.
+- [x] Review questions can be answered in your own words.
 
 The guide remains `Draft` while you work. Change it and the canonical
 documentation map to `Validated` only after every technical gate is reproduced.

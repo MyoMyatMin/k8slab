@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: reliability
+  labels:
+    app.kubernetes.io/name: reliability
+    app.kubernetes.io/part-of: k8slab
+    app.kubernetes.io/component: namespace

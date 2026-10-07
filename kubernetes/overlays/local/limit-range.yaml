@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: reliability-container-limits
+  namespace: reliability
+  labels:
+    app.kubernetes.io/name: reliability-container-limits
+    app.kubernetes.io/part-of: k8slab
+    app.kubernetes.io/component: resource-boundary
+spec:
+  limits:
+    - type: Container
+      min:
+        cpu: 10m
+        memory: 16Mi
+      max:
+        cpu: "1"
+        memory: 1Gi
