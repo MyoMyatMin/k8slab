@@ -1,0 +1,15 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: reliability-gateway
+  namespace: reliability
+spec:
+  gatewayClassName: reliability-gateway-class
+  listeners:
+    - name: http
+      protocol: HTTP
+      port: 80
+      hostname: reliability.localhost
+      allowedRoutes:
+        namespaces:
+          from: Same
