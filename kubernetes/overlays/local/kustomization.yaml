@@ -5,15 +5,20 @@ namespace: reliability
 
 resources:
   - ../../base
+  - ../../policies
   - namespace.yaml
   - resource-quota.yaml
   - limit-range.yaml
+  - envoy-proxy.yaml
+  - gateway-class.yaml
+  - gateway.yaml
+  - http-route.yaml
 
 images:
   - name: ghcr.io/myomyatmin/k8slab-api
-    digest: sha256:80b24677fbb67cbaacb2334d584a7f98cbc8e9b6f8dab25cb582869ae13a77e5
+    digest: sha256:89c3cfefddbca7bb6ae513418d6f830ae55941e7d036a6e438fa2216bb268863
   - name: ghcr.io/myomyatmin/k8slab-frontend
-    digest: sha256:e0f89ae8c39963d2c10b3821152da43b7503b9f767e63b2d28b355937593178f
+    digest: sha256:d2643e31dec5e1f781a23aab7ae63ad33cdceef9b346693ccf587eeef90ee161
 
 labels:
   - pairs:

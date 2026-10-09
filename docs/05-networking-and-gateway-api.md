@@ -1,12 +1,15 @@
 # Phase 5 — Networking and Traffic Management
 
-> Status: Draft
+> Status: Complete
 >
-> Last validated: Not yet validated
+> Last validated: 2026-10-10 on kind with Calico 3.33.0 and Envoy Gateway 1.9.2
 >
 > Version baseline selected: 2026-10-07 for Calico 3.33.0, Gateway API 1.6.1, Envoy Gateway 1.9.2, Kubernetes 1.37.0, kind 0.33.0, Helm 4.3.0, and Kustomize 5.8.1
 >
 > Exercise modes: Guided completion for the small frontend change; challenge-first for cluster networking, Gateway API, and NetworkPolicy
+
+For a concept-first explanation of every networking boundary in this phase,
+use [`05-networking-theory-review.md`](05-networking-theory-review.md).
 
 ## 1. Why this phase matters
 
@@ -176,6 +179,7 @@ kubernetes/
     └── kustomization.yaml
 docs/
 ├── 05-networking-and-gateway-api.md
+├── 05-networking-theory-review.md
 └── 05-networking-and-gateway-api-evidence.md
 versions.env
 ```
@@ -366,7 +370,8 @@ Update `cluster/kind/kind.yaml` with this contract:
 
 - preserve one control-plane and two labeled workers;
 - disable kind's default CNI;
-- set Pod subnet `192.168.0.0/16`;
+- set Pod subnet `10.244.0.0/16`, which must not overlap the host or
+  container-node network;
 - map host TCP 8080 to control-plane container TCP 30080;
 - expose neither the Kubernetes API nor application Pods directly.
 
@@ -396,7 +401,7 @@ apiVersion: kind.x-k8s.io/v1alpha4
 name: k8slab
 networking:
   disableDefaultCNI: true
-  podSubnet: 192.168.0.0/16
+  podSubnet: 10.244.0.0/16
 nodes:
   - role: control-plane
     extraPortMappings:
@@ -436,9 +441,36 @@ Nodes will remain `NotReady`: you deliberately created them without a CNI.
 Do not make `kind create cluster` wait for Ready nodes, because that condition
 cannot become true until the next Calico installation step.
 
-Create `cluster/bootstrap/calico-values.yaml` containing a valid minimal YAML
-document (`{}`). This phase needs Calico networking and portable Kubernetes
-policy, not optional Calico UI or layer-7 features.
+Create `cluster/bootstrap/calico-values.yaml` with the same non-overlapping Pod
+CIDR as kind. Disable the optional API server and UI components because this
+phase needs Calico networking and portable Kubernetes policy, not Calico UI or
+layer-7 features:
+
+```yaml
+installation:
+  kubernetesProvider: Kind
+  calicoNetwork:
+    ipPools:
+      - name: default-ipv4-ippool
+        cidr: 10.244.0.0/16
+        blockSize: 26
+        encapsulation: IPIP
+        natOutgoing: Enabled
+        nodeSelector: all()
+
+apiServer:
+  enabled: false
+
+goldmane:
+  enabled: false
+
+whisker:
+  enabled: false
+```
+
+Before cluster creation, compare this CIDR with the Docker or OrbStack network.
+Overlapping ranges can let Pod-to-Pod traffic work while preventing Pods such
+as CoreDNS from reaching the Kubernetes API on a node address.
 
 ```bash
 helm repo add projectcalico https://docs.tigera.io/calico/charts
@@ -560,7 +592,8 @@ Contract:
 - external traffic policy: `Cluster` because the mapped control-plane node may
   not host an Envoy Pod;
 - Service port 80 uses fixed NodePort 30080;
-- StrategicMerge patch uses generated port name `http-80`;
+- StrategicMerge patch uses generated port name `http-80` and includes
+  `port: 80`, the required Service port-list merge key;
 - GatewayClass parametersRef includes group, kind, name, and namespace.
 
 Hints:
@@ -599,7 +632,7 @@ Create `http-route.yaml`:
 |---|---|---:|
 | `/api` | `api` | 8000 |
 | `/health` | `api` | 8000 |
-| `/` | `frontend` | 8080 |
+| `/` | `frontend` | 80 |
 
 Constraints:
 
@@ -609,6 +642,9 @@ Constraints:
 - do not rewrite `/api`;
 - use Service ports;
 - rely on most-specific match precedence, not list order.
+
+The frontend Service exposes port 80 and forwards to Pod port 8080. Therefore
+the HTTPRoute uses 80, while the frontend NetworkPolicy later permits 8080.
 
 Explain why `/api/v1/visits` does not fall through to nginx even though `/`
 also matches.
@@ -708,7 +744,7 @@ Confirm the generated Service is NodePort `80:30080/TCP`:
 
 ```bash
 kubectl get service -n envoy-gateway-system \
-  -l gateway.networking.k8s.io/gateway-name=reliability-gateway \
+  -l gateway.envoyproxy.io/owning-gateway-name=reliability-gateway \
   -o wide
 ```
 

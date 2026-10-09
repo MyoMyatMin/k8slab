@@ -1,0 +1,12 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: reliability
+
+resources:
+  - default-deny.yaml
+  - allow-dns.yaml
+  - allow-gateway-to-api.yaml
+  - allow-gateway-to-frontend.yaml
+  - allow-api-to-redis.yaml
+  - allow-redis-from-api.yaml

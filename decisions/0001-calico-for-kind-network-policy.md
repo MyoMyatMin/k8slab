@@ -21,7 +21,8 @@ The local `k8slab` kind cluster will use Calico Open Source as both its CNI and
 NetworkPolicy engine.
 
 - kind's default CNI is disabled in the versioned cluster configuration.
-- The Pod CIDR is explicitly set to `192.168.0.0/16`.
+- The Pod CIDR is explicitly set to `10.244.0.0/16` and must not overlap the
+  host or container-node network.
 - Calico is installed at the pinned version in `versions.env` before application
   workloads are restored.
 - Application policy remains portable Kubernetes

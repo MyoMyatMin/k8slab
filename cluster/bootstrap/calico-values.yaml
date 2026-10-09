@@ -1,0 +1,19 @@
+installation:
+  kubernetesProvider: Kind
+  calicoNetwork:
+    ipPools:
+      - name: default-ipv4-ippool
+        cidr: 10.244.0.0/16
+        blockSize: 26
+        encapsulation: IPIP
+        natOutgoing: Enabled
+        nodeSelector: all()
+
+apiServer:
+  enabled: false
+
+goldmane:
+  enabled: false
+
+whisker:
+  enabled: false
