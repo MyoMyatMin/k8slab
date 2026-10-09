@@ -614,7 +614,7 @@ Status values are `Planned`, `Draft`, `Validated`, and `Complete`.
 | 3 | `docs/03-containers-and-ci.md` | Complete |
 | 4 | `docs/04-kubernetes-foundation.md` | Complete |
 | 5 | `docs/05-networking-and-gateway-api.md` | Complete |
-| 6 | `docs/06-gitops-with-argocd.md` | Planned |
+| 6 | `docs/06-gitops-with-argocd.md` | Draft |
 | 7 | `docs/07-metrics-and-dashboards.md` | Planned |
 | 8 | `docs/08-logging-with-loki.md` | Planned |
 | 9 | `docs/09-alerting-with-alertmanager.md` | Planned |
