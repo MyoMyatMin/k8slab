@@ -1,12 +1,15 @@
 # Phase 5 — Networking and Traffic Management
 
-> Status: Draft
+> Status: Complete
 >
-> Last validated: Not yet validated
+> Last validated: 2026-10-10 on kind with Calico 3.33.0 and Envoy Gateway 1.9.2
 >
 > Version baseline selected: 2026-10-07 for Calico 3.33.0, Gateway API 1.6.1, Envoy Gateway 1.9.2, Kubernetes 1.37.0, kind 0.33.0, Helm 4.3.0, and Kustomize 5.8.1
 >
 > Exercise modes: Guided completion for the small frontend change; challenge-first for cluster networking, Gateway API, and NetworkPolicy
+
+For a concept-first explanation of every networking boundary in this phase,
+use [`05-networking-theory-review.md`](05-networking-theory-review.md).
 
 ## 1. Why this phase matters
 
@@ -176,6 +179,7 @@ kubernetes/
     └── kustomization.yaml
 docs/
 ├── 05-networking-and-gateway-api.md
+├── 05-networking-theory-review.md
 └── 05-networking-and-gateway-api-evidence.md
 versions.env
 ```
